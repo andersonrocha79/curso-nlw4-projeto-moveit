@@ -1,4 +1,4 @@
-import { createContext, useState, ReactNode } from 'react';
+import { createContext, useState, ReactNode, useEffect } from 'react';
 
 import challenges from '../../challenges.json';
 
@@ -23,7 +23,8 @@ interface ChallengeContextData
     experienceToNextLevel : number,
     levelUp : () => void,
     startNewChallenge: () => void,
-    resetChallenge: () => void
+    resetChallenge: () => void,
+    completeChallenge: () => void
 }
 
 export const challengesContext = createContext({} as ChallengeContextData);
@@ -42,17 +43,22 @@ export function ChallengesProvider( { children } : ChallengesProviderProps)
     // variáveis de contexto que serão
     // compartilhadas pelos componentes
     let contexto = 
-        {         
-            level, 
-            currentExperience, 
-            challengesCompleted, 
-            experienceToNextLevel,
-            levelUp,
-            startNewChallenge,
-            activeChallenge,
-            resetChallenge   
-        };
+    {         
+        level, 
+        currentExperience, 
+        challengesCompleted, 
+        experienceToNextLevel,
+        levelUp,
+        startNewChallenge,
+        activeChallenge,
+        resetChallenge,
+        completeChallenge
+    };
 
+    useEffect( () =>
+    {
+        Notification.requestPermission();
+    }, []); // quando o segundo parametro é [], indica que será executado uma única vez
 
     function levelUp()
     {
@@ -71,11 +77,50 @@ export function ChallengesProvider( { children } : ChallengesProviderProps)
         // coloca o desafio no contexto para compartilhamento
         setActiveChallenge(challenge);
 
+        // toca um áudio para a notificação
+        new Audio('/notification.mp3').play();
+
+        // verifica se tem permissões
+        // https://developer.mozilla.org/pt-BR/docs/Web/API/Notification
+        if (Notification.permission === 'granted')
+        {
+            new Notification('Novo Desafio!', 
+            {
+                body: `Valendo ${challenge.amount} XP!`
+            })
+        }
+
     }
 
     function resetChallenge()
     {
         setActiveChallenge(null);
+    }
+
+    function completeChallenge()
+    {
+
+        if (!completeChallenge)
+        {
+            return;
+        }
+
+        const { amount } = activeChallenge;
+
+        let finalExperience = currentExperience + amount;
+
+        if (finalExperience >= experienceToNextLevel)
+        {            
+            finalExperience = finalExperience - experienceToNextLevel;
+            levelUp();
+        }
+
+        setCurrentExperience(finalExperience);
+
+        setActiveChallenge(null);
+
+        setChallengesCompleted(challengesCompleted+1);
+
     }
 
     return (        
