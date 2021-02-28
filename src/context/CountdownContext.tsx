@@ -25,7 +25,7 @@ export function CountdownProvider( { children } : CountdownProviderProps)
 
     const { startNewChallenge }         = useContext(challengesContext);
 
-    const [time, setTime]               = useState(0.10 * 60); // 6 segundos
+    const [time, setTime]               = useState(25 * 60); // 6 segundos
     const [isActive, setIsActive]       = useState(false);
     const [hasFinished, setHasFinished] = useState(false);
 
@@ -42,7 +42,7 @@ export function CountdownProvider( { children } : CountdownProviderProps)
     {
         clearTimeout(countdownTimeout);
         setIsActive(false);
-        setTime(0.10 * 60);
+        setTime(25 * 60);
         setHasFinished(false);
     }
 
